@@ -5,7 +5,7 @@ const overviewData = {
   members: [
     'Phạm Xuân Hoàng - SE190821',
     'Nguyễn Đức Anh Tài - SE192068',
-    'Nguyễn Việt Hoàng - SE182984',
+    'Phạm Từ Duy Tân - SE193296',
     'Hoàng Huy Hoàng - SE193680',
     'Nguyễn Hồ Nhật Minh - SE190651',
   ],
