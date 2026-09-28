@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, animate, motion } from 'framer-motion'
 import Wheel from '../game/Wheel'
-import { KEYBOARD_ROWS, RESULT_MS, SOLVE_BONUS, TEAMS, TURN_SECONDS, WHEEL_SEGMENTS } from '../game/config'
+import { KEYBOARD_ROWS, RESULT_MS, SOLVE_BONUS, TEAMS, TURN_SECONDS, WHEEL_SEGMENTS, pickWheelIndex } from '../game/config'
 import { PART_TITLES, QUESTIONS } from '../game/questions'
 import { setMuted, sfx } from '../game/sfx'
 
@@ -240,7 +240,7 @@ export default function GamePage() {
 
   const handleSpin = () => {
     if (phase !== 'IDLE' || roundOver) return
-    const index = Math.floor(Math.random() * WHEEL_SEGMENTS.length)
+    const index = pickWheelIndex()
     const offset = Math.floor(Math.random() * 20) - 10
     const landing = (((-index * 36 + offset) % 360) + 360) % 360
     const fullTurns = rotation - (((rotation % 360) + 360) % 360)
@@ -486,7 +486,7 @@ export default function GamePage() {
   return (
     <div
       ref={stageRef}
-      className="relative flex min-h-[calc(100dvh-4.25rem)] flex-col gap-4 bg-stage px-5 py-5 text-cream sm:px-10 lg:min-h-[calc(100dvh-5.25rem)] lg:gap-5 lg:px-14 [&:fullscreen]:min-h-dvh [&:fullscreen]:overflow-y-auto"
+      className="relative flex min-h-[calc(100dvh-4.25rem)] flex-col gap-4 bg-stage/95 px-5 py-5 text-cream sm:px-10 lg:min-h-[calc(100dvh-5.25rem)] lg:gap-5 lg:px-14 [&:fullscreen]:min-h-dvh [&:fullscreen]:overflow-y-auto [&:fullscreen]:bg-stage"
       style={{ backgroundImage: 'radial-gradient(ellipse 55% 65% at 22% 62%, rgba(224,176,64,0.13), transparent 70%)' }}
     >
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-cream/15 pb-3">

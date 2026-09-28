@@ -11,7 +11,8 @@ function MainLayout() {
   }, [pathname, hash])
 
   return (
-    <div className="flex min-h-dvh flex-col bg-paper text-ink">
+    <div className="site-shell flex min-h-dvh flex-col text-ink">
+      <div className="site-backdrop" aria-hidden="true" />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"

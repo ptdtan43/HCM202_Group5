@@ -16,12 +16,24 @@ export const WHEEL_SEGMENTS = [
   { id: 3, label: '500', type: 'score', value: 500, fill: '#34312B' },
   { id: 4, label: 'NHÂN ĐÔI', type: 'multiply', value: 2, fill: '#9B2C20', text: '#EFE8D8' },
   { id: 5, label: '100', type: 'score', value: 100, fill: '#2B2924' },
-  { id: 6, label: 'PHÁ SẢN', type: 'bankrupt', fill: '#0A0A09', text: '#E2583E' },
+  { id: 6, label: 'PHÁ SẢN', type: 'bankrupt', weight: 0.3, fill: '#0A0A09', text: '#E2583E' },
   { id: 7, label: '300', type: 'score', value: 300, fill: '#34312B' },
   { id: 8, label: '800', type: 'score', value: 800, fill: '#2B2924' },
   { id: 9, label: 'MẤT LƯỢT', type: 'lose_turn', fill: '#57524A', text: '#EFE8D8' },
   { id: 10, label: '1000', type: 'score', value: 1000, fill: '#34312B' },
 ]
+
+// Unspecified weights are 1: bankruptcy has a 0.3 / 9.3 (~3.23%) chance.
+// Visual wedges stay equal; this index also determines the wheel's landing angle.
+export function pickWheelIndex(random = Math.random) {
+  const totalWeight = WHEEL_SEGMENTS.reduce((sum, segment) => sum + (segment.weight ?? 1), 0)
+  let remaining = random() * totalWeight
+  for (let index = 0; index < WHEEL_SEGMENTS.length; index += 1) {
+    remaining -= WHEEL_SEGMENTS[index].weight ?? 1
+    if (remaining < 0) return index
+  }
+  return WHEEL_SEGMENTS.length - 1
+}
 
 // Vietnamese does not use F, J, W or Z, so they are left off the board.
 export const KEYBOARD_ROWS = [

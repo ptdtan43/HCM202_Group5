@@ -5,12 +5,12 @@
   --font-serif: "Newsreader", Georgia, serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-paper: #f2eee4;
-  --color-ink: #1c1b18;
-  --color-ink-soft: #4a463f;
-  --color-muted: #6b665c;
-  --color-rule: rgb(28 27 24 / 0.18);
-  --color-accent: #9b2c20;
+  --color-paper: #faf6f0;
+  --color-ink: #302521;
+  --color-ink-soft: #51423a;
+  --color-muted: #68584e;
+  --color-rule: rgb(83 57 42 / 0.20);
+  --color-accent: #923d3d;
 
   --font-display: "Archivo", "Arial Narrow", sans-serif;
   --color-stage: #141311;
@@ -42,6 +42,53 @@ body {
 
 #root {
   min-height: 100dvh;
+}
+
+/* A separate decorative layer keeps blur away from text and section images. */
+.site-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.site-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--color-paper);
+}
+
+.site-backdrop::before {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  background: url('./assets/Background.jpg') center 42% / cover no-repeat;
+  filter: blur(10px) saturate(.55);
+  opacity: .34;
+}
+
+.site-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(250 246 240 / .32), rgb(250 246 240 / .48));
+}
+
+@media (max-width: 767px) {
+  .site-backdrop::before {
+    background-position: 48% center;
+    filter: blur(8px) saturate(.5);
+    opacity: .29;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .site-backdrop::before { display: none; }
+}
+
+@media print {
+  .site-backdrop { display: none; }
 }
 
 @layer base {

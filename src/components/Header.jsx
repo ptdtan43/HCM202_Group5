@@ -11,7 +11,7 @@ function Header() {
   return (
     <header className="sticky top-0 z-40 bg-paper/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-6 px-5 sm:px-10 lg:px-24">
-        <div className="flex w-full items-center justify-between gap-4 border-b border-ink py-5 sm:gap-6 lg:py-6">
+        <div className="flex h-[80px] w-full items-center justify-between gap-4 border-b border-ink sm:gap-6">
           <Link to="/" className="flex shrink-0 items-baseline gap-3">
             <span className="font-mono text-[13px] font-medium tracking-[0.14em] text-ink lg:text-base">HCM202</span>
             <span className="hidden text-sm text-muted sm:inline lg:text-lg">Nhóm 5</span>
