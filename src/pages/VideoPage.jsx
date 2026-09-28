@@ -2,20 +2,20 @@ import ReactPlayer from 'react-player'
 
 const videoData = {
   title: 'Video thuyết trình',
-  subtitle: 'Phân tích ai hưởng lợi trong nền kinh tế số.',
+  subtitle: 'Video tóm tắt nội dung bài thuyết trình, được tạo bằng NotebookLM.',
   src: 'https://pub-5fffdec11f644b0fa58f1720464a2ae8.r2.dev/T%E1%BA%A7m_nh%C3%ACn_chi%E1%BA%BFn_l%C6%B0%E1%BB%A3c_HCM.mp4',
 }
 
 function VideoPage() {
   return (
-    <section className="animate-fade-up animate-fade-up-delay-1 w-full px-1 sm:px-2">
-      <header className="mb-8 text-center">
-        <h1 className="text-4xl font-semibold text-slate-800 sm:text-5xl">{videoData.title}</h1>
-        <p className="mt-2 text-lg text-slate-600 sm:text-xl">{videoData.subtitle}</p>
+    <section className="animate-fade-up w-full pt-16 sm:pt-20">
+      <header className="mx-auto mb-10 max-w-5xl">
+        <h1 className="font-serif text-5xl font-normal tracking-[-0.02em] text-ink sm:text-6xl lg:text-7xl">{videoData.title}</h1>
+        <p className="mt-3 text-lg text-ink-soft sm:text-xl lg:text-2xl">{videoData.subtitle}</p>
       </header>
 
-      <article className="mx-auto max-w-5xl rounded-2xl border border-white/70 bg-white/70 p-5 shadow-[0_10px_24px_rgba(13,55,89,0.1)] backdrop-blur-md sm:p-6">
-        <div className="aspect-video overflow-hidden rounded-xl border border-slate-200 bg-slate-900">
+      <article className="mx-auto max-w-5xl">
+        <div className="aspect-video overflow-hidden rounded-[2px] bg-ink">
           <ReactPlayer
             src={videoData.src}
             width="100%"

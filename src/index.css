@@ -1,25 +1,67 @@
 @import "tailwindcss";
 
-:root {
-  color: #0f2b46;
+@theme {
+  --font-sans: "Be Vietnam Pro", system-ui, sans-serif;
+  --font-serif: "Newsreader", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-paper: #f2eee4;
+  --color-ink: #1c1b18;
+  --color-ink-soft: #4a463f;
+  --color-muted: #6b665c;
+  --color-rule: rgb(28 27 24 / 0.18);
+  --color-accent: #9b2c20;
+
+  --font-display: "Archivo", "Arial Narrow", sans-serif;
+  --color-stage: #141311;
+  --color-stage-raised: #1d1b18;
+  --color-cream: #efe8d8;
+  --color-cream-muted: #a39c8c;
+  --color-gold: #e0b040;
+  --color-danger: #e2583e;
+}
+
+@utility font-condensed {
+  font-family: var(--font-display);
+  font-stretch: 62%;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at 10% 15%, rgba(238, 158, 52, 0.35), transparent 40%),
-    radial-gradient(circle at 85% 90%, rgba(47, 170, 165, 0.22), transparent 40%),
-    linear-gradient(145deg, #f5efe0 0%, #edf7f5 50%, #eef3ff 100%);
-  font-family: Poppins, "Nunito Sans", "Segoe UI", sans-serif;
+  min-height: 100dvh;
+  background: var(--color-paper);
+  color: var(--color-ink);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
-  min-height: 100vh;
-  padding: clamp(18px, 3vw, 36px);
+  min-height: 100dvh;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
 @keyframes fadeUp {
@@ -30,38 +72,6 @@ body {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(0, -24px, 0) scale(1.08);
-  }
-}
-
-@keyframes driftReverse {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(0, 20px, 0) scale(0.94);
-  }
-}
-
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
   }
 }
 
@@ -116,6 +126,39 @@ body {
   }
 }
 
+@keyframes bulbBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes confettiFall {
+  from {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(0, 112vh, 0) rotate(540deg);
+  }
+}
+
+.animate-bulb {
+  animation: bulbBlink 0.5s steps(1) infinite;
+}
+
+.animate-bulb-alt {
+  animation: bulbBlink 0.5s steps(1) infinite 0.25s;
+}
+
+.animate-confetti {
+  animation-name: confettiFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 .animate-fade-up {
   animation: fadeUp 680ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
@@ -130,19 +173,6 @@ body {
 
 .animate-fade-up-delay-3 {
   animation-delay: 320ms;
-}
-
-.animate-soft-float {
-  animation: drift 10s ease-in-out infinite;
-}
-
-.animate-soft-float-reverse {
-  animation: driftReverse 12s ease-in-out infinite;
-}
-
-.animate-gradient-shift {
-  background-size: 200% 200%;
-  animation: gradientShift 9s ease infinite;
 }
 
 .animate-accordion-reveal {
