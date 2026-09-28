@@ -4,6 +4,7 @@ import Wheel from '../game/Wheel'
 import { KEYBOARD_ROWS, RESULT_MS, SOLVE_BONUS, TEAMS, TURN_SECONDS, WHEEL_SEGMENTS, pickWheelIndex } from '../game/config'
 import { PART_TITLES, QUESTIONS } from '../game/questions'
 import { setMuted, sfx } from '../game/sfx'
+import { settleRound, swapTeamScores } from '../game/scoring'
 
 const MotionDiv = motion.div
 const MotionSpan = motion.span
@@ -37,7 +38,7 @@ const BANNER_STYLES = {
   score: 'bg-gold text-stage',
   multiply: 'bg-[#9B2C20] text-cream',
   lose_turn: 'bg-[#57524A] text-cream',
-  bankrupt: 'border-2 border-danger bg-[#0A0A09] text-danger',
+  swap_points: 'border-2 border-gold bg-[#0A0A09] text-gold',
   correct: 'border-2 border-gold bg-stage-raised text-gold',
   wrong: 'border-2 border-danger bg-stage-raised text-danger',
 }
@@ -202,7 +203,7 @@ export default function GamePage() {
   const words = question.answer.split(' ')
   const roundOver = revealedAll || letters.every((c) => guessed.includes(c))
   const isLastQuestion = questionIndex === QUESTIONS.length - 1
-  const busy = phase === 'SPINNING' || phase === 'RESULT' || phase === 'SOLVING' || phase === 'STEAL'
+  const busy = phase === 'SPINNING' || phase === 'RESULT' || phase === 'SOLVING' || phase === 'STEAL' || phase === 'SWAP_POINTS'
   const canAct = (phase === 'IDLE' || phase === 'GUESSING') && !roundOver
 
   const ranking = useMemo(
@@ -224,11 +225,7 @@ export default function GamePage() {
   }, [])
 
   const finishRound = useCallback((winnerIndex, points) => {
-    setTeams((prev) =>
-      prev.map((team, index) =>
-        index === winnerIndex ? { ...team, score: team.score + points, roundScore: 0 } : { ...team, roundScore: 0 },
-      ),
-    )
+    setTeams((prev) => settleRound(prev, winnerIndex, points))
     setRoundWinner({ teamIndex: winnerIndex, points })
     setRevealedAll(true)
     setSpinResult(null)
@@ -251,21 +248,17 @@ export default function GamePage() {
 
   const handleSpinEnd = () => {
     if (phase !== 'SPINNING' || !spinResult) return
-    const team = teams[activeTeam]
     const upNext = TEAMS[nextTeamIndex(activeTeam)].name
 
     if (spinResult.type === 'lose_turn') {
       sfx.loseTurn()
       pushBanner({ kind: 'lose_turn', title: 'Mất lượt', detail: `Đến lượt ${upNext}`, duration: RESULT_MS })
-    } else if (spinResult.type === 'bankrupt') {
-      const kept = Math.floor(team.score / 2)
-      const lost = team.roundScore + team.score - kept
-      setTeams((prev) => prev.map((t, i) => (i === activeTeam ? { ...t, score: kept, roundScore: 0 } : t)))
-      sfx.bankrupt()
+    } else if (spinResult.type === 'swap_points') {
+      sfx.land()
       pushBanner({
-        kind: 'bankrupt',
-        title: 'Phá sản',
-        detail: lost > 0 ? `${team.name} mất ${formatScore(lost)} điểm` : `${team.name} chưa có điểm để mất`,
+        kind: 'swap_points',
+        title: 'Đổi điểm',
+        detail: 'Chọn một đội để hoán đổi tổng điểm',
         duration: RESULT_MS,
       })
     } else {
@@ -279,6 +272,19 @@ export default function GamePage() {
       })
     }
     setPhase('RESULT')
+  }
+
+  const chooseSwapTeam = (targetIndex) => {
+    if (phase !== 'SWAP_POINTS' || targetIndex === activeTeam || !teams[targetIndex]) return
+    setTeams((prev) => swapTeamScores(prev, activeTeam, targetIndex))
+    sfx.correct()
+    pushBanner({
+      kind: 'swap_points',
+      title: 'Đã đổi điểm',
+      detail: `${teams[activeTeam].name} ↔ ${teams[targetIndex].name}`,
+      duration: RESULT_MS,
+    })
+    passTurn(activeTeam)
   }
 
   const handleGuess = useCallback(
@@ -367,7 +373,7 @@ export default function GamePage() {
 
   const revealAnswer = () => {
     if (busy || roundOver) return
-    setTeams((prev) => prev.map((team) => ({ ...team, roundScore: 0 })))
+    setTeams((prev) => settleRound(prev))
     setRoundWinner(null)
     setRevealedAll(true)
     setSpinResult(null)
@@ -382,7 +388,7 @@ export default function GamePage() {
     setGuessed([])
     setRevealedAll(false)
     setRoundWinner(null)
-    setTeams((prev) => prev.map((team) => ({ ...team, roundScore: 0 })))
+    setTeams((prev) => settleRound(prev))
     setSpinResult(null)
     setSolver(null)
     setFailedSolvers([])
@@ -419,8 +425,10 @@ export default function GamePage() {
   useEffect(() => {
     if (phase !== 'RESULT' || !spinResult) return
     const id = setTimeout(() => {
-      if (spinResult.type === 'lose_turn' || spinResult.type === 'bankrupt') {
+      if (spinResult.type === 'lose_turn') {
         passTurn(activeTeam)
+      } else if (spinResult.type === 'swap_points') {
+        setPhase('SWAP_POINTS')
       } else {
         setTimeLeft(TURN_SECONDS)
         setPhase('GUESSING')
@@ -472,6 +480,7 @@ export default function GamePage() {
   let status
   if (roundOver) status = 'Vòng này đã kết thúc'
   else if (phase === 'SPINNING') status = 'Đang quay…'
+  else if (phase === 'SWAP_POINTS') status = 'Chọn đội để hoán đổi tổng điểm'
   else if (phase === 'GUESSING' && spinResult)
     status =
       spinResult.type === 'multiply'
@@ -594,13 +603,9 @@ export default function GamePage() {
                 role="status"
                 aria-live="assertive"
                 initial={{ opacity: 0, y: -14, scale: 0.97 }}
-                animate={
-                  banner.kind === 'bankrupt'
-                    ? { opacity: 1, y: 0, scale: 1, x: [0, -16, 16, -12, 12, -5, 0] }
-                    : { opacity: 1, y: 0, scale: 1 }
-                }
+                animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
-                transition={{ duration: banner.kind === 'bankrupt' ? 0.6 : 0.35, ease: EASE_OUT }}
+                transition={{ duration: 0.35, ease: EASE_OUT }}
                 className={`absolute inset-x-0 top-0 z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-7 py-6 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.8)] lg:px-9 ${BANNER_STYLES[banner.kind]}`}
               >
                 <span className="font-condensed text-5xl leading-none font-extrabold uppercase lg:text-7xl">{banner.title}</span>
@@ -652,6 +657,7 @@ export default function GamePage() {
                 )}
                 <span className="font-mono text-sm tracking-[0.12em] text-gold lg:text-base">PHẦN {pad(question.part)}</span>
               </div>
+              <p className="text-base text-cream-muted lg:text-lg">Điểm vòng này của tất cả các đội đã được cộng vào tổng điểm.</p>
               <p className="font-mono text-xs tracking-[0.1em] text-cream-muted uppercase lg:text-sm">{PART_TITLES[question.part]}</p>
               <p className="text-lg leading-relaxed lg:text-2xl">{question.explanation}</p>
               <div className="flex justify-end">
@@ -722,6 +728,32 @@ export default function GamePage() {
       </div>
 
       <AnimatePresence>
+        {phase === 'SWAP_POINTS' && (
+          <Overlay key="swap-points" labelledBy="swap-points-title">
+            <h2 id="swap-points-title" className="font-condensed text-4xl font-extrabold text-gold sm:text-5xl">
+              {teams[activeTeam].name}: chọn đội đổi điểm
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-cream-muted">
+              Tổng điểm hiện tại: {formatScore(teams[activeTeam].score)}. Chọn một đội để hoán đổi tổng điểm.
+              Điểm vòng này của mỗi đội giữ nguyên. Sau khi đổi sẽ chuyển lượt.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {teams.map((team, index) => index === activeTeam ? null : (
+                <button key={team.name} type="button" onClick={() => chooseSwapTeam(index)}
+                  className="border-2 bg-stage p-4 text-left transition hover:bg-cream/5 focus-visible:outline-gold"
+                  style={{ borderColor: team.color, color: team.tint }}>
+                  <span className="block text-xl font-semibold">{team.name}</span>
+                  <span className="mt-2 block text-2xl font-bold">{formatScore(team.score)} điểm</span>
+                  <span className="mt-2 block text-sm text-cream-muted">Sau đổi: {formatScore(teams[activeTeam].score)} điểm</span>
+                </button>
+              ))}
+            </div>
+            <button type="button" onClick={() => passTurn(activeTeam)}
+              className="mt-6 text-base text-cream-muted underline underline-offset-4 hover:text-cream">
+              Bỏ qua, chuyển lượt
+            </button>
+          </Overlay>
+        )}
         {phase === 'SOLVING' && solver !== null && (
           <Overlay key="solve" labelledBy="solve-title">
             <span className="font-mono text-sm tracking-[0.14em] text-gold lg:text-base">
@@ -735,8 +767,7 @@ export default function GamePage() {
               {TEAMS[solver].name} trả lời
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-cream-muted lg:text-2xl">
-              MC lắng nghe câu trả lời rồi xác nhận. Trả lời đúng được cộng {formatScore(SOLVE_BONUS)} điểm cùng điểm vòng này
-              của đội.
+              MC lắng nghe câu trả lời rồi xác nhận. Trả lời đúng được thưởng {formatScore(SOLVE_BONUS)} điểm. Khi kết thúc vòng, mọi đội đều được cộng điểm vòng này vào tổng điểm.
             </p>
             <div className="mt-8 grid grid-cols-2 gap-4">
               <button
