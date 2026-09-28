@@ -1,10 +1,9 @@
 function Footer() {
   return (
-    <footer className="mt-12 border-t border-white/70 px-1">
-      <div className="animate-fade-up animate-fade-up-delay-3 w-full px-5 py-7 text-center text-xl font-semibold tracking-tight text-slate-700 sm:px-10 sm:py-8 sm:text-3xl">
-        <span className="bg-gradient-to-r from-slate-700 via-cyan-700 to-slate-700 bg-clip-text text-transparent">
-          {/* {'B\u1ea1n t\u1ea1o ra gi\u00e1 tr\u1ecb, nh\u01b0ng b\u1ea1n c\u00f3 gi\u1eef n\u00f3 kh\u00f4ng?'} */}
-        </span>
+    <footer className="mx-auto mt-24 w-full max-w-[1440px] px-5 sm:px-10 lg:px-24">
+      <div className="flex flex-col gap-2 border-t border-ink pt-7 pb-10 text-sm text-muted sm:flex-row lg:text-lg sm:items-center sm:justify-between">
+        <span className="font-semibold text-ink">HCM202 · Nhóm 5 · Đại học FPT TP. Hồ Chí Minh</span>
+        <span>Tư tưởng Hồ Chí Minh về đại đoàn kết toàn dân tộc</span>
       </div>
     </footer>
   )
